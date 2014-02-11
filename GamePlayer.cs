@@ -5,36 +5,40 @@ using System.Threading.Tasks;
 
 namespace rhul
 {
+    public interface IGamePlayerResults
+    {
+        public int HighestScore { get; }
+        public int HighestLoop { get; }
+        public int[] HighestScorePosition { get; }
+        public int[] HighestLoopPosition { get; }
+        public int HighestScoreOccurrences { get; }
+        public int HighestLoopOccurrences { get; }
+    }
+
     /*
      * The program was only using 25% of processing power on my PC, so to use the other cores I made it multithreaded.
      * It runs about 2.5 times faster than singlethreaded on my quad core PC (about 500ms with the Console.WriteLine()'s commented)
      */
     public class GamePlayer
     {
-        public class GameScores
+        private class GameScores : IGamePlayerResults
         {
-            public readonly int meh;
-            internal GameScores()
-            {
-                meh = 1;
-            }
+            public int HighestScore { get; set; }
+            public int HighestLoop { get; set; }
+            public int[] HighestScorePosition { get; set; }
+            public int[] HighestLoopPosition { get; set; }
+            public int HighestScoreOccurrences { get; set; }
+            public int HighestLoopOccurrences { get; set; }
         }
 
-
-        private List<StartPos> positions;   
-        private object  scoreLock = new object();
-
-        // marked as 'volatile' because multiple threads will be reading these for comparisons and setting them, so a thread could get a stale cached value without this
-        private volatile int highestScore, highestLoop;
-
-        // these are only written to by the multiple threads. all writes are volatile in C#, so no need for the 'volatile' keyword (learnt this from here: http://igoro.com/archive/volatile-keyword-in-c-memory-model-explained/)
-        private int highestLoopOccurrences = 0, highestScoreOccurrences = 0;
-        private int[] highestScorePosition, highestLoopPosition;
+        private readonly List<StartPos> positions;
+        private readonly GameScores results;
+        private object scoreLock = new object();
 
         public GamePlayer(List<StartPos> positions)
         {
             this.positions = positions;
-            var gs = new GameScores();
+            this.results = new GameScores();
         }
 
         public void Play(List<StartPos> positions)
@@ -42,72 +46,42 @@ namespace rhul
             Parallel.ForEach<StartPos>(this.positions, this.PlayGame);
         }
 
-        private void PlayGame(StartPos pos)
+        private IGamePlayerResults PlayGame(StartPos pos)
         {
             Game game = new Game(pos);
             game.Play();
-
             UpdateScores(pos, game);
+            return this.results;
         }
 
-        private void UpdateScores(StartPos item, Game game)
+        private void UpdateScores(StartPos position, Game game)
         {
             // multiple threads could collide here without a lock
             lock (this.scoreLock)
             {
                 //score stats
-                if (game.Score > this.highestScore)
+                if (game.Score > this.results.HighestScore)
                 {
-                    this.highestScorePosition = item.position;
-                    this.highestScore = game.Score;
-                    this.highestScoreOccurrences = 1;
+                    this.results.HighestScorePosition = position.position;
+                    this.results.HighestScore = game.Score;
+                    this.results.HighestScoreOccurrences = 1;
                 }
-                else if (game.Score == this.highestScore)
+                else if (game.Score == this.results.HighestScore)
                 {
-                    this.highestScoreOccurrences++;
+                    this.results.HighestScoreOccurrences++;
                 }
                 // loop stats
-                if (game.Loop > this.highestLoop)
+                if (game.Loop > this.results.HighestLoop)
                 {
-                    this.highestLoopPosition = item.position;
-                    this.highestLoop = game.Loop;
-                    this.highestLoopOccurrences = 1;
+                    this.results.HighestLoopPosition = position.position;
+                    this.results.HighestLoop = game.Loop;
+                    this.results.HighestLoopOccurrences = 1;
                 }
-                else if (game.Loop == this.highestLoop)
+                else if (game.Loop == this.results.HighestLoop)
                 {
-                    this.highestLoopOccurrences++;
+                    this.results.HighestLoopOccurrences++;
                 }
             }
-        }
-
-        public int HighestScore
-        {
-            get { return this.highestScore; }
-        }
-
-        public int HighestLoop
-        {
-            get { return this.highestLoop; }
-        }
-
-        public int[] HighestScorePosition
-        {
-            get { return this.highestScorePosition; }
-        }
-
-        public int[] HighestLoopPosition
-        {
-            get { return this.highestLoopPosition; }
-        }
-
-        public int HighestScoreOccurrences
-        {
-            get { return this.highestScoreOccurrences; }
-        }
-
-        public int HighestLoopOccurrences
-        {
-            get { return this.highestLoopOccurrences; }
         }
     }
 }
