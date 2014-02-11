@@ -6,11 +6,33 @@ namespace rhul
 {
     class Program
     {
-        const int CoinsToCalculate = 36;
+        /// <summary>
+        /// The original challenge was to go up to 36 coins.
+        /// </summary>
+        const int DefaultCoinsToCalculate = 36;
 
         static void Main(string[] args)
         {
-            PlayGames(CoinsToCalculate);
+            int maxCoins = GetMaxCoins(args);
+            PlayGames(maxCoins);
+        }
+
+        /// <summary>
+        /// Trys to get the max number of coins from the first command line argument if it's specified.
+        /// </summary>
+        private static int GetMaxCoins(string[] args)
+        {
+            int maxCoins = DefaultCoinsToCalculate;
+            try
+            {
+                string argMaxCoins = args[0];
+                maxCoins = int.Parse(argMaxCoins);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Could not get max coins from command line argument, defaulting to {0}", DefaultCoinsToCalculate);
+            }
+            return maxCoins;
         }
 
         /// <summary>
@@ -49,7 +71,6 @@ namespace rhul
                 Console.WriteLine("TIMES pos-gen: {0}ms, game: {1}ms", gspDur.TotalMilliseconds, gpDur.TotalMilliseconds);
                 Console.WriteLine();
             }
-
 
             Console.WriteLine("Execution time {0}ms", (DateTime.Now - start).TotalMilliseconds);
             Console.ReadKey();
