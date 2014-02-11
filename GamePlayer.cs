@@ -5,20 +5,23 @@ using System.Threading.Tasks;
 
 namespace rhul
 {
+    /// <summary>
+    /// Immutifies the 
+    /// </summary>
     public interface IGamePlayerResults
     {
-        public int HighestScore { get; }
-        public int HighestLoop { get; }
-        public int[] HighestScorePosition { get; }
-        public int[] HighestLoopPosition { get; }
-        public int HighestScoreOccurrences { get; }
-        public int HighestLoopOccurrences { get; }
+        int HighestScore { get; }
+        int HighestLoop { get; }
+        int[] HighestScorePosition { get; }
+        int[] HighestLoopPosition { get; }
+        int HighestScoreOccurrences { get; }
+        int HighestLoopOccurrences { get; }
     }
 
-    /*
-     * The program was only using 25% of processing power on my PC, so to use the other cores I made it multithreaded.
-     * It runs about 2.5 times faster than singlethreaded on my quad core PC (about 500ms with the Console.WriteLine()'s commented)
-     */
+    /// <summary>
+    /// Calculates the highest 'score' and 'loop' values for a list of starting positions by
+    /// concurrently playing the game on each position.
+    /// </summary>
     public class GamePlayer
     {
         private class GameScores : IGamePlayerResults
@@ -41,17 +44,17 @@ namespace rhul
             this.results = new GameScores();
         }
 
-        public void Play(List<StartPos> positions)
+        public IGamePlayerResults Play(List<StartPos> positions)
         {
             Parallel.ForEach<StartPos>(this.positions, this.PlayGame);
+            return this.results;
         }
 
-        private IGamePlayerResults PlayGame(StartPos pos)
+        private void PlayGame(StartPos pos)
         {
             Game game = new Game(pos);
             game.Play();
             UpdateScores(pos, game);
-            return this.results;
         }
 
         private void UpdateScores(StartPos position, Game game)

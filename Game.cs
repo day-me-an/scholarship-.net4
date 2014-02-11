@@ -2,6 +2,12 @@
 
 namespace rhul
 {
+    public interface IGameScore
+    {
+        public int Score { get; }
+        public int Loop { get; }
+    }
+
     public class Game
     {
         private int[] currentPos;
@@ -118,16 +124,6 @@ namespace rhul
             }
 
             this.currentPos = newPos;
-        }
-
-        public int Score
-        {
-            get { return this.score; }
-        }
-
-        public int Loop
-        {
-            get { return this.loop; }
         }
     }
 }

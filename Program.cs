@@ -29,30 +29,30 @@ namespace rhul
                 List<StartPos> startingPositions = pg.Generate(coins);
                 TimeSpan gspDur = DateTime.Now - gspStart;
 
-                DateTime pgStart = DateTime.Now;
-                GamePlayer pgame = new GamePlayer(startingPositions);
-                pgame.Play(startingPositions);
-                TimeSpan pgDur = DateTime.Now - pgStart;
+                DateTime gpStart = DateTime.Now;
+                GamePlayer gp = new GamePlayer(startingPositions);
+                IGamePlayerResults results = gp.Play(startingPositions);
+                TimeSpan gpDur = DateTime.Now - gpStart;
 
                 // the question said output *any* position for highest loop/score, so it only shows one (which can vary due to the multiple threads).
                 // comment these out for more accurate algorithm execution time
-                /*Console.WriteLine("Coins={0}", coins);
+                Console.WriteLine("Coins={0}", coins);
                 Console.WriteLine(" Highest Score is {0} (shared by {1}/{2} positions) and first found at [{3}]",
-                    pgame.HighestScore,
-                    pgame.HighestScoreOccurrences,
+                    results.HighestScore,
+                    results.HighestScoreOccurrences,
                     startingPositions.Count,
-                    String.Join(",", Array.ConvertAll<int, string>(pgame.HighestScorePosition, Convert.ToString)));
+                    String.Join(",", Array.ConvertAll<int, string>(results.HighestScorePosition, Convert.ToString)));
                 Console.WriteLine(" Highest Loop is {0} (shared by {1}/{2} positions) and first found at [{3}]",
-                    pgame.HighestLoop,
-                    pgame.HighestLoopOccurrences,
+                    results.HighestLoop,
+                    results.HighestLoopOccurrences,
                     startingPositions.Count,
-                    String.Join(",", Array.ConvertAll<int, string>(pgame.HighestLoopPosition, Convert.ToString)));
-                Console.WriteLine("TIMES pgen: {0}ms, pgame: {1}ms", gspDur.TotalMilliseconds, pgDur.TotalMilliseconds);
-                Console.WriteLine();*/
+                    String.Join(",", Array.ConvertAll<int, string>(results.HighestLoopPosition, Convert.ToString)));
+                Console.WriteLine("TIMES pgen: {0}ms, gp: {1}ms", gspDur.TotalMilliseconds, gpDur.TotalMilliseconds);
+                Console.WriteLine();
             }
 
 
-            Console.WriteLine("execution time {0}ms", (DateTime.Now - start).TotalMilliseconds);
+            Console.WriteLine("Execution time {0}ms", (DateTime.Now - start).TotalMilliseconds);
             Console.ReadKey();
         }
     }
