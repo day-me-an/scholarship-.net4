@@ -2,7 +2,7 @@ scholarship-.net4
 =================
 
 This is a partially rewritten version of the [original C# scholarship program](https://github.com/day-me-an/scholarship-program)
-that uses the .net 4.0 Task Parallel Library (TPL) to radically simplify the parallel game player.
+that uses the .net 4.0 [Task Parallel Library (TPL)](http://en.wikipedia.org/wiki/Parallel_Extensions#Task_Parallel_Library) to radically simplify the parallel game player.
 
 Key features:
 * Self-documenting coding style.
