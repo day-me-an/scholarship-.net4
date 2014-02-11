@@ -10,14 +10,13 @@ namespace rhul
 
         static void Main(string[] args)
         {
-            //VerifyStartingPositions(CoinsToCalculate);
             PlayGames(CoinsToCalculate);
         }
 
-        /*
-         * Plays the game on every combination for each number of coins.
-         * Outputs the highest score, loop and the combination they occur at for each number of coins.
-         */
+        /// <summary>
+        /// Plays the game on every combination for each number of coins. 
+        /// Outputs the highest score, loop and the combination they occur at for each number of coins.
+        /// </summary>
         static void PlayGames(int maxCoins)
         {
             DateTime start = DateTime.Now;
@@ -47,7 +46,7 @@ namespace rhul
                     results.HighestLoopOccurrences,
                     startingPositions.Count,
                     String.Join(",", Array.ConvertAll<int, string>(results.HighestLoopPosition, Convert.ToString)));
-                Console.WriteLine("TIMES pgen: {0}ms, gp: {1}ms", gspDur.TotalMilliseconds, gpDur.TotalMilliseconds);
+                Console.WriteLine("TIMES pos-gen: {0}ms, game: {1}ms", gspDur.TotalMilliseconds, gpDur.TotalMilliseconds);
                 Console.WriteLine();
             }
 

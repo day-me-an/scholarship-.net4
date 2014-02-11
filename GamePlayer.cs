@@ -5,9 +5,6 @@ using System.Threading.Tasks;
 
 namespace rhul
 {
-    /// <summary>
-    /// Immutifies the 
-    /// </summary>
     public interface IGamePlayerResults
     {
         int HighestScore { get; }
@@ -20,7 +17,7 @@ namespace rhul
 
     /// <summary>
     /// Calculates the highest 'score' and 'loop' values for a list of starting positions by
-    /// concurrently playing the game on each position.
+    /// concurrently playing multiple games.
     /// </summary>
     public class GamePlayer
     {
@@ -53,34 +50,34 @@ namespace rhul
         private void PlayGame(StartPos pos)
         {
             Game game = new Game(pos);
-            game.Play();
-            UpdateScores(pos, game);
+            IGameResult result = game.Play();
+            UpdateScores(pos, result);
         }
 
-        private void UpdateScores(StartPos position, Game game)
+        private void UpdateScores(StartPos position, IGameResult result)
         {
             // multiple threads could collide here without a lock
             lock (this.scoreLock)
             {
                 //score stats
-                if (game.Score > this.results.HighestScore)
+                if (result.Score > this.results.HighestScore)
                 {
-                    this.results.HighestScorePosition = position.position;
-                    this.results.HighestScore = game.Score;
+                    this.results.HighestScorePosition = position.Piles;
+                    this.results.HighestScore = result.Score;
                     this.results.HighestScoreOccurrences = 1;
                 }
-                else if (game.Score == this.results.HighestScore)
+                else if (result.Score == this.results.HighestScore)
                 {
                     this.results.HighestScoreOccurrences++;
                 }
                 // loop stats
-                if (game.Loop > this.results.HighestLoop)
+                if (result.Loop > this.results.HighestLoop)
                 {
-                    this.results.HighestLoopPosition = position.position;
-                    this.results.HighestLoop = game.Loop;
+                    this.results.HighestLoopPosition = position.Piles;
+                    this.results.HighestLoop = result.Loop;
                     this.results.HighestLoopOccurrences = 1;
                 }
-                else if (game.Loop == this.results.HighestLoop)
+                else if (result.Loop == this.results.HighestLoop)
                 {
                     this.results.HighestLoopOccurrences++;
                 }

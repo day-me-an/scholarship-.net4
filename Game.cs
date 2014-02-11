@@ -2,31 +2,45 @@
 
 namespace rhul
 {
-    public interface IGameScore
+    public interface IGameResult
     {
-        public int Score { get; }
-        public int Loop { get; }
+        int Score { get; }
+        int Loop { get; }
     }
 
+    /// <summary>
+    /// Plays the game on a starting position.
+    /// </summary>
     public class Game
     {
-        private int[] currentPos;
-        private int ones = 0, score, loop;
-        // stores all previous positions, including the starting position, so the algorithm can detect a repeated position
+        private class GameResult : IGameResult
+        {
+            public int Score { get; set; }
+            public int Loop { get; set; }
+        }
+
+        private StartPos currentPos;
+        /// <summary>
+        /// stores all previous positions, including the starting position, so the algorithm can detect a repeated position
+        /// </summary>
         private List<int[]> moveHistory = new List<int[]>();
 
         public Game(StartPos startPos)
         {
-            this.currentPos = startPos.position;
-            this.ones = startPos.ones;
-            this.moveHistory.Add(this.currentPos);
+            this.currentPos = startPos;
+            this.moveHistory.Add(startPos.Piles);
         }
 
-        public void Play()
+        /// <summary>
+        /// Repeatedly plays a round of the game until a repeated position occurs.
+        /// </summary>
+        public IGameResult Play()
         {
+            GameResult result = new GameResult();
+
             bool isLastMoveRepeated = false;
             // performs a move on the current position until a repeated position occurs
-            while(!isLastMoveRepeated)
+            while (!isLastMoveRepeated)
             {
                 // perform a move on the current position
                 this.PerformMove();
@@ -36,17 +50,22 @@ namespace rhul
 
                 if (isLastMoveRepeated)
                 {
-                    this.loop = this.score - moveIndex;
+                    result.Loop = result.Score - moveIndex;
                 }
                 else
                 {
-                    this.moveHistory.Add(this.currentPos);
+                    this.moveHistory.Add(this.currentPos.Piles);
                 }
-                this.score++;
+                result.Score++;
             }
+
+            return result;
         }
 
-        private void CheckRepeated(out bool _isLastMoveRepeated, out int repeatedMoveNumber)
+        /// <summary>
+        /// Determines whether a repeated position has occured and at what move number.
+        /// </summary>
+        private void CheckRepeated(out bool out_isLastMoveRepeated, out int out_repeatedMoveNumber)
         {
             bool isLastMoveRepeated = false;
             int moveIndex = this.moveHistory.Count - 1;
@@ -56,13 +75,13 @@ namespace rhul
                 int[] prevPos = this.moveHistory[moveIndex];
 
                 // only compare positions with equal length to the current move
-                if (prevPos.Length == this.currentPos.Length)
+                if (prevPos.Length == this.currentPos.Piles.Length)
                 {
                     // compare the previous position with the current
                     bool matches = true;
-                    for (int i = 0; matches && i < this.currentPos.Length; i++)
+                    for (int i = 0; matches && i < this.currentPos.Piles.Length; i++)
                     {
-                        if (prevPos[i] != this.currentPos[i])
+                        if (prevPos[i] != this.currentPos.Piles[i])
                         {
                             matches = false;
                         }
@@ -73,54 +92,55 @@ namespace rhul
                 }
             }
 
-            _isLastMoveRepeated = isLastMoveRepeated;
-            repeatedMoveNumber = moveIndex;
+            out_isLastMoveRepeated = isLastMoveRepeated;
+            out_repeatedMoveNumber = moveIndex;
         }
 
-        /*
-         * Performs a move on the current position in the game. The algorithm works as follows:
-         * 
-         * 1) Subtracts one coin from each stack in the current position
-         * 2) Creates a new stack from the coins subtracted, which is just the input position's size.
-         * 3) Inserts the new stack at the correct location for the new position to be in descending order.
-        */
+        /// <summary>
+        /// Performs a move on the current position in the game. The algorithm works as follows:
+        /// 1) Subtracts one coin from each pile in the current position.
+        /// 2) Creates a new pile from the coins subtracted, which is just the input position's size.
+        /// 3) Inserts the new pile at the correct location for the new position to be in descending order.
+        /// </summary>
         private void PerformMove()
         {
             // use the number of ones in the current position to calculate the exact size for the new position array
-            int[] newPos = new int[this.currentPos.Length - this.ones + 1];
-            int newPile = this.currentPos.Length;
-            int newPosIndex = 0;
-            // reset the number of ones, as its next value will be determined by the new position created by this method
-            this.ones = 0;
+            StartPos newPos = new StartPos();
+            newPos.Piles = new int[this.currentPos.Piles.Length - this.currentPos.Ones + 1];
 
+            int newPile = this.currentPos.Piles.Length;
             if (newPile == 1)
-                this.ones++;
+            {
+                newPos.Ones++;
+            }
 
+            int newPosIndex = 0;
             bool hasAddedNewPile = false;
-            // add the stacks to the new position by subtracting one from each stack and insert the new stack at the correct location to maintain descending order
-            foreach(int pile in this.currentPos)
+            // add the piles to the new position by subtracting one from each pile and insert the new pile at the correct location to maintain descending order
+            foreach (int pile in this.currentPos.Piles)
             {
                 int updatedPile = pile - 1;
                 if (updatedPile > 0)
                 {
                     if (updatedPile == 1)
-                        this.ones++;
-
-                    // add the new stack
+                    {
+                        newPos.Ones++;
+                    }
+                    // add the new pile if it belongs at this position
                     if (!hasAddedNewPile && updatedPile <= newPile)
                     {
-                        newPos[newPosIndex++] = newPile;
+                        newPos.Piles[newPosIndex++] = newPile;
                         hasAddedNewPile = true;
                     }
-
-                    newPos[newPosIndex++] = updatedPile;
+                    // add the updated pile
+                    newPos.Piles[newPosIndex++] = updatedPile;
                 }
             }
 
-            // if the new stack was too small to be addded above, it must go on the end
+            // if the new pile was too small to be addded above, it must go on the end
             if (!hasAddedNewPile)
             {
-                newPos[newPosIndex] = newPile;
+                newPos.Piles[newPosIndex] = newPile;
             }
 
             this.currentPos = newPos;
