@@ -10,5 +10,5 @@ Key features:
 * Moved the old `GenerateStartingPositions()` to `PositionGenerator` containing 5 extracted methods.
 * Use of TPL's `Parallel.ForEach<TSource>(IEnumerable<TSource>, Action<TSource>)` to simplify the old multi-threaded code.
 * `Game.Play()` now returns an immutable object containing the outcome rather than `Game` having public properties that are dependent on `Play()` being called.
-** Same for `GamePlayer` (this was named `ParallelGame` in the original).
+ * Same for `GamePlayer` (previously called `ParallelGame`).
 * Other minor coding style changes.
